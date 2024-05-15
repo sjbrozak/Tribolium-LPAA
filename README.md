@@ -6,4 +6,4 @@ The data is located in ``tribolium_data_pilot.xlsx`` and sorted into sheets by e
 
 ## MATLAB code
 
-
+- ``onestep_fit_expgroups.m``: fits experimental subgroups by minimizing sum of squares of one-step residuals. Generates plots comparing the LPA and LPAA models, as well as a QQ plot of the LPAA residuals. Figures are not automatically saved due to formatting bugs.
