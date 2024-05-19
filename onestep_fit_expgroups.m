@@ -93,12 +93,12 @@ LPAA_onestep_pairs_A = zeros(max(Data.Time)-1,2);
 for k = 2:length(Means.Larvae)-1
     % LPA Model
     IC_LPA_temp = [Means.Larvae(k) Means.Pupae(k) Means.Adult(k)];
-    [La,Pa,Aa,~] = LPA(best_params_LPA,Means.Larvae,Means.Pupae,Means.Adult,2,mu_l,IC_LPA_temp);
+    [La,Pa,Aa] = LPA(best_params_LPA,2,mu_l,IC_LPA_temp);
     LPA_onestep_pairs_L(k,:) = La; LPA_onestep_pairs_P(k,:) = Pa; LPA_onestep_pairs_A(k,:) = Aa;
 
     % LPAA Model
     IC_LPAA_temp = [Means.Larvae(k) Means.Pupae(k) (Means.Adult(k)-Means.Adult(k-1)) Means.Adult(k-1)];
-    [Lb,Pb,A1b,A2b,~] = LPAA(best_params_LPAA,Means.Larvae,Means.Pupae,Means.Adult,2,mu_l,IC_LPAA_temp);
+    [Lb,Pb,A1b,A2b] = LPAA(best_params_LPAA,2,mu_l,IC_LPAA_temp);
     LPAA_onestep_pairs_L(k,:) = Lb; LPAA_onestep_pairs_P(k,:) = Pb; LPAA_onestep_pairs_A(k,:) = A1b+A2b;
 end
 
@@ -116,32 +116,36 @@ compareplots(Week,Means.Larvae,Means.Pupae,Means.Adult, ...
 function err = obj_fun(params,Ldata,Pdata,Adata,mu_l,flag,weights)
     
     if flag == 0 % simulate LPA model
-        LPA_onestep_pairs_L = zeros(length(Ldata)-1,2);
-        LPA_onestep_pairs_P = zeros(length(Ldata)-1,2);
-        LPA_onestep_pairs_A = zeros(length(Ldata)-1,2);
+        LPA_onestep_pairs_L = [];
+        LPA_onestep_pairs_P = [];
+        LPA_onestep_pairs_A = [];
         for k = 2:length(Ldata)-1
             IC_LPA_temp = [Ldata(k) Pdata(k) Adata(k)];
-            [La,Pa,Aa,~] = LPA(params,2,mu_l,IC_LPA_temp);
-            LPA_onestep_pairs_L(k,:) = La; LPA_onestep_pairs_P(k,:) = Pa; LPA_onestep_pairs_A(k,:) = Aa;
+            [La,Pa,Aa] = LPA(params,2,mu_l,IC_LPA_temp);
+            LPA_onestep_pairs_L = [LPA_onestep_pairs_L; La']; 
+            LPA_onestep_pairs_P = [LPA_onestep_pairs_P; Pa'];  
+            LPA_onestep_pairs_A = [LPA_onestep_pairs_A; Aa']; 
         end
-        Q(1) = sum(( Ldata(2:end) - LPA_onestep_pairs_L(:,2) ).^2);
-        Q(2) = sum(( Pdata(2:end) - LPA_onestep_pairs_P(:,2) ).^2);
-        Q(3) = sum(( Adata(2:end) - LPA_onestep_pairs_A(:,2) ).^2);
+        Q(1) = sum(( Ldata(3:end) - LPA_onestep_pairs_L(:,end) ).^2);
+        Q(2) = sum(( Pdata(3:end) - LPA_onestep_pairs_P(:,end) ).^2);
+        Q(3) = sum(( Adata(3:end) - LPA_onestep_pairs_A(:,end) ).^2);
 
     else % simulate LPAA model
-        LPAA_onestep_pairs_L = zeros(length(Ldata)-1,2);
-        LPAA_onestep_pairs_P = zeros(length(Ldata)-1,2);
-        LPAA_onestep_pairs_A = zeros(length(Ldata)-1,2);
+        LPAA_onestep_pairs_L = [];
+        LPAA_onestep_pairs_P = [];
+        LPAA_onestep_pairs_A = [];
         
         for k = 2:length(Ldata)-1
             IC_LPAA_temp = [Ldata(k) Pdata(k) (Adata(k)-Adata(k-1)) Adata(k-1)];
-            [Lb,Pb,A1b,A2b,~] = LPAA(params,2,mu_l,IC_LPAA_temp);
-            LPAA_onestep_pairs_L(k,:) = Lb; LPAA_onestep_pairs_P(k,:) = Pb; LPAA_onestep_pairs_A(k,:) = A1b+A2b;
+            [Lb,Pb,A1b,A2b] = LPAA(params,2,mu_l,IC_LPAA_temp);
+            LPAA_onestep_pairs_L = [LPAA_onestep_pairs_L; Lb']; 
+            LPAA_onestep_pairs_P = [LPAA_onestep_pairs_P; Pb'];  
+            LPAA_onestep_pairs_A = [LPAA_onestep_pairs_A; A1b'+A2b'];  
         end
     
-        Q(1) = sum(( Ldata(2:end) - LPAA_onestep_pairs_L(:,2) ).^2);
-        Q(2) = sum(( Pdata(2:end) - LPAA_onestep_pairs_P(:,2) ).^2);
-        Q(3) = sum(( Adata(2:end) - LPAA_onestep_pairs_A(:,2) ).^2);
+        Q(1) = sum(( Ldata(3:end) - LPAA_onestep_pairs_L(:,end) ).^2);
+        Q(2) = sum(( Pdata(3:end) - LPAA_onestep_pairs_P(:,end) ).^2);
+        Q(3) = sum(( Adata(3:end) - LPAA_onestep_pairs_A(:,end) ).^2);
     end
 
     err = weights(1)*Q(1) + weights(2)*Q(2) + weights(3)*Q(3);
