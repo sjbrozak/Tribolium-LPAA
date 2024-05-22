@@ -15,7 +15,7 @@ set(0, 'DefaultAxesFontName', 'Times New Roman');
 %% 
 
 % specify experimental group and parse out info for plotting
-group = "N_ub_1";
+group = "P_ub_05";
 exp_info = split(group,"_");
 
 % read data
