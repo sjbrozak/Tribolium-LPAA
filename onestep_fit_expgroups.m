@@ -180,7 +180,7 @@ function [L,P,A1,A2] = LPAA(params,Nmax,mu_l,IC)
     for n = 1:Nmax-1       % Main computational loop
         L(n+1) = A2(n)*b*exp(-c1*A2(n));
         P(n+1) = (1 - mu_l)*L(n);
-        A1(n+1) = (1 - mu_p)*P(n);
+        A1(n+1) = P(n)*exp(-mu_l*A2(n));
         A2(n+1) = A1(n)*exp(-c2*A2(n)) + (1 - mu_a)*A2(n);
     end
 end
